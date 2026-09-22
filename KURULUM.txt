@@ -1,0 +1,16 @@
+BU REPOYU KULLANMA
+
+1) Flutter kurulu bir bilgisayarda:
+   flutter create .
+   flutter pub get
+
+2) supabase/schema.sql dosyasını Supabase SQL Editor'da çalıştır.
+
+3) lib/app_config.dart içine Supabase URL ve publishable/anon key koy.
+   VEYA GitHub Actions secret kullan.
+
+4) Lokal APK:
+   flutter build apk --release
+
+Not: `flutter create .` eksik Android/iOS platform dosyalarını üretir.
+GitHub Actions dosyası Android APK'yı otomatik üretir.
