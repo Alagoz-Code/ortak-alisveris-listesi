@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="tr" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#10b981">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Ortak Alışveriş Listesi</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-slide-up {
+      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="h-full text-slate-800 dark:text-slate-100 dark:bg-slate-900 transition-colors duration-200">
+
+  <div id="app" class="min-h-full max-w-md mx-auto flex flex-col bg-white dark:bg-slate-900 shadow-2xl border-x border-slate-100 dark:border-slate-800 relative">
+    
+    <!-- Top Bar / Header -->
+    <header class="sticky top-0 z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-100 dark:border-slate-800 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-2xl bg-emerald-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight tracking-tight text-slate-900 dark:text-white">Ortak Alışveriş</h1>
+          <div id="statusBadge" class="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <span id="statusDot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="statusText">Canlı Eşitlendi</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1">
+        <button id="themeToggleBtn" aria-label="Tema" class="p-2.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+          <svg id="themeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+        </button>
+        <button id="openModalBtn" aria-label="Ayarlar" class="p-2.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="flex-1 p-4 space-y-4 overflow-y-auto">
+
+      <!-- Room Code Banner with Share Options -->
+      <div class="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-2xl p-3.5 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-emerald-500 text-white rounded-xl shadow-sm">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071a10 10 0 0114.142 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
+              </svg>
+            </div>
+            <div>
+              <div class="text-[10px] font-bold tracking-wider text-emerald-700 dark:text-emerald-400 uppercase">ORTAK AİLE KODU</div>
+              <div id="roomCodeDisplay" class="font-bold text-slate-900 dark:text-white tracking-wider text-base font-mono">HUSOGULE1</div>
+            </div>
+          </div>
+          <button id="changeRoomCodeBtn" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition active:scale-95">
+            Kodu Değiştir
+          </button>
+        </div>
+
+        <!-- Share Buttons for Instant Syncing -->
+        <div class="pt-1 border-t border-emerald-500/10 flex gap-2">
+          <button onclick="shareRoomLink()" class="flex-1 py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+            </svg>
+            Eşine Link Gönder
+          </button>
+          <button onclick="showQrCode()" class="py-1.5 px-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl shadow-sm transition active:scale-95 flex items-center justify-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+            </svg>
+            QR Göster
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Presets -->
+      <div class="space-y-1.5">
+        <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 flex items-center gap-1">
+          <span>⚡ Hızlı Ekle:</span>
+        </div>
+        <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-1 text-xs">
+          <button onclick="quickAdd('Süt', '1 L', 'Süt & Süt Ürünleri')" class="shrink-0 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 rounded-xl font-medium transition flex items-center gap-1">🥛 Süt</button>
+          <button onclick="quickAdd('Ekmek', '1 adet', 'Fırın & Unlu Mamüller')" class="shrink-0 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 rounded-xl font-medium transition flex items-center gap-1">🍞 Ekmek</button>
+          <button onclick="quickAdd('Yumurta', '10 lu', 'Süt & Süt Ürünleri')" class="shrink-0 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 rounded-xl font-medium transition flex items-center gap-1">🥚 Yumurta</button>
+          <button onclick="quickAdd('Peynir', '1 paket', 'Süt & Süt Ürünleri')" class="shrink-0 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 rounded-xl font-medium transition flex items-center gap-1">🧀 Peynir</button>
+          <button onclick="quickAdd('Elma', '1 kg', 'Meyve & Sebze')" class="shrink-0 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 rounded-xl font-medium transition flex items-center gap-1">🍎 Elma</button>
+          <button onclick="quickAdd('Su', '1 koli', 'İçecek')" class="shrink-0 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 rounded-xl font-medium transition flex items-center gap-1">💧 Su</button>
+          <button onclick="quickAdd('Tuvalet Kağıdı', '1 paket', 'Temizlik')" class="shrink-0 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 rounded-xl font-medium transition flex items-center gap-1">🧻 T. Kağıdı</button>
+        </div>
+      </div>
+
+      <form id="addItemForm" onsubmit="handleFormSubmit(event)" class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3 space-y-2.5">
+        <div class="flex gap-2">
+          <input type="text" id="itemName" placeholder="Ürün adı yazın (ör: 2 kg Elma)..." required autocomplete="off"
+            class="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 dark:text-white">
+          <input type="text" id="itemQty" placeholder="1 adet" value="1 adet"
+            class="w-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/50 dark:text-white">
+        </div>
+        
+        <div class="flex gap-2">
+          <select id="itemCat" class="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 dark:text-white">
+            <option value="Meyve & Sebze">🥦 Meyve & Sebze</option>
+            <option value="Kasap & Et">🥩 Kasap & Et</option>
+            <option value="Süt & Süt Ürünleri">🥛 Süt & Süt Ürünleri</option>
+            <option value="Fırın & Unlu Mamüller">🍞 Fırın & Unlu Mamüller</option>
+            <option value="Temizlik">🧹 Temizlik</option>
+            <option value="Atıştırmalık">🍿 Atıştırmalık</option>
+            <option value="İçecek">🥤 İçecek</option>
+            <option value="Diğer" selected>📦 Diğer</option>
+          </select>
+          <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md shadow-emerald-600/20 transition active:scale-95 flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+            </svg>
+            Ekle
+          </button>
+        </div>
+      </form>
+
+      <!-- Filtering controls -->
+      <div class="flex items-center justify-between pt-1 text-xs">
+        <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl font-medium">
+          <button type="button" id="tabAll" onclick="setFilter('all')" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white transition">Tümü</button>
+          <button type="button" id="tabActive" onclick="setFilter('active')" class="px-3 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 transition">Alınacaklar</button>
+          <button type="button" id="tabDone" onclick="setFilter('done')" class="px-3 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 transition">Alınanlar</button>
+        </div>
+
+        <button type="button" onclick="clearCompletedItems()" class="font-semibold text-rose-500 hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Temizle
+        </button>
+      </div>
+
+      <!-- List Container -->
+      <div id="itemList" class="space-y-2 pb-12 min-h-[160px]">
+        <!-- Dynamic content via JS -->
+      </div>
+
+    </main>
+
+    <!-- Toast Notification Overlay -->
+    <div id="toastContainer" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-xs pointer-events-none"></div>
+
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-700 space-y-5">
+      <div class="flex items-center justify-between border-b pb-3 border-slate-100 dark:border-slate-700">
+        <h3 class="font-bold text-lg text-slate-900 dark:text-white">Ortak Aile Kodu & Ayarlar</h3>
+        <button type="button" onclick="closeModal()" class="p-1 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Ortak Aile Kodu (Her iki telefonda aynı yazın)</label>
+          <input type="text" id="roomInput" placeholder="HUSOGULE1" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm uppercase font-mono tracking-wider text-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500/50 outline-none">
+          <p class="text-[11px] text-slate-400 mt-1">Her iki telefonda bu kod aynı olduğunda anında canlı eşitlenir.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Kullanıcı Adınız</label>
+          <input type="text" id="userInput" placeholder="Hüseyin veya Eşim" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500/50 outline-none">
+          <p class="text-[11px] text-slate-400 mt-1">Eklediğiniz ürünlerin altında görünecek isim.</p>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button type="button" onclick="forceSync()" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-medium text-xs rounded-xl transition">
+          🔄 Yeniden Eşitle
+        </button>
+        <button type="button" onclick="saveSettings()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition">
+          Kaydet & Bağlan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Code Modal -->
+  <div id="qrModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 w-full max-w-xs text-center shadow-2xl border border-slate-100 dark:border-slate-700 space-y-4">
+      <h3 class="font-bold text-base text-slate-900 dark:text-white">Eşinin Telefonu ile Okut</h3>
+      <div id="qrImageContainer" class="p-3 bg-white rounded-2xl border border-slate-200 inline-block mx-auto shadow-inner">
+        <!-- QR img dynamically inserted -->
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400">Eşin kamerasını açıp bu QR kodu okuttuğunda otomatik olarak senin odana bağlanır.</p>
+      <button onclick="closeQrModal()" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl">Kapat</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+      getAuth, 
+      signInAnonymously, 
+      signInWithCustomToken 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+      getFirestore, 
+      doc, 
+      setDoc, 
+      onSnapshot 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    /* Global Environment Variables & Config */
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'ortak-alisveris-app';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' 
+      ? JSON.parse(__firebase_config) 
+      : {
+          apiKey: "AIzaSyDemoFallbackKeyOnly",
+          authDomain: "demo.firebaseapp.com",
+          projectId: "demo-project",
+          storageBucket: "demo.appspot.com",
+          messagingSenderId: "123456789",
+          appId: "1:123456789:web:12345"
+        };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    let roomUnsubscribe = null;
+
+    /* Application State */
+    const appState = {
+      roomCode: 'HUSOGULE1',
+      userName: 'Siz',
+      filter: 'all',
+      items: [],
+      lastUpdated: 0
+    };
+
+    /* Safe Storage Helpers */
+    const memoryStorage = {};
+
+    function safeGetStorage(key, fallback = null) {
+      try {
+        const val = localStorage.getItem(key);
+        return val !== null ? val : fallback;
+      } catch (e) {
+        return memoryStorage[key] !== undefined ? memoryStorage[key] : fallback;
+      }
+    }
+
+    function safeSetStorage(key, value) {
+      try {
+        localStorage.setItem(key, value);
+      } catch (e) {
+        memoryStorage[key] = value;
+      }
+    }
+
+    /* Helper: Clean Room Code strictly */
+    function getCleanRoomCode() {
+      const code = (appState.roomCode || 'HUSOGULE1').toString().trim().toUpperCase();
+      return code.replace(/[^A-Z0-9]/g, '') || 'HUSOGULE1';
+    }
+
+    /* Helper: Escape HTML string safely */
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    /* Toast Notification Helper */
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = `p-3 rounded-2xl shadow-xl text-xs font-semibold text-white transition-all transform duration-300 pointer-events-auto flex items-center justify-between gap-2 animate-slide-up ${
+        type === 'error' ? 'bg-rose-600' : 'bg-slate-800 dark:bg-slate-700 border border-slate-600'
+      }`;
+      toast.innerHTML = `<span>${escapeHtml(message)}</span>`;
+      
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    /* Update UI Status Indicator */
+    function setStatus(online, message) {
+      const dot = document.getElementById('statusDot');
+      const txt = document.getElementById('statusText');
+      if (txt) txt.innerText = message || (online ? 'Canlı Eşitlendi' : 'Bağlanıyor...');
+      if (dot) {
+        dot.className = online 
+          ? "w-2 h-2 rounded-full bg-emerald-500 animate-pulse" 
+          : "w-2 h-2 rounded-full bg-amber-500 animate-pulse";
+      }
+    }
+
+    async function initAuth() {
+      if (currentUser) return currentUser;
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          const userCred = await signInWithCustomToken(auth, __initial_auth_token);
+          currentUser = userCred.user;
+        } else {
+          const userCred = await signInAnonymously(auth);
+          currentUser = userCred.user;
+        }
+      } catch (e) {
+        console.warn("Auth warning, fallback anonymous auth:", e);
+        try {
+          const userCred = await signInAnonymously(auth);
+          currentUser = userCred.user;
+        } catch (err) {
+          console.error("Auth failure:", err);
+        }
+      }
+      return currentUser;
+    }
+
+    /* Save Document to Firestore (Public Artifact Path Rule) */
+    async function saveRoomToFirestore() {
+      if (!currentUser) await initAuth();
+      if (!currentUser) return;
+
+      const roomCode = getCleanRoomCode();
+      const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'shopping_lists', roomCode);
+
+      try {
+        await setDoc(roomDocRef, {
+          items: appState.items,
+          updatedAt: Date.now(),
+          updatedBy: appState.userName || 'Biri'
+        }, { merge: true });
+      } catch (e) {
+        console.error("Firestore sync save error:", e);
+        showToast('Kaydetme hatası oluştu', 'error');
+      }
+    }
+
+    /* Subscribe Realtime Updates with onSnapshot */
+    async function subscribeToRoom() {
+      if (roomUnsubscribe) {
+        roomUnsubscribe();
+        roomUnsubscribe = null;
+      }
+
+      await initAuth();
+      if (!currentUser) {
+        setStatus(false, 'Bağlantı Kurulamadı');
+        return;
+      }
+
+      const roomCode = getCleanRoomCode();
+      const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'shopping_lists', roomCode);
+
+      setStatus(false, 'Eşitleniyor...');
+
+      roomUnsubscribe = onSnapshot(roomDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data && Array.isArray(data.items)) {
+            const isRemote = data.updatedBy && data.updatedBy !== appState.userName && (data.updatedAt > appState.lastUpdated);
+
+            appState.items = data.items;
+            appState.lastUpdated = data.updatedAt || Date.now();
+            renderItemList();
+            setStatus(true, 'Canlı Eşitlendi');
+
+            if (isRemote) {
+              showToast(`🔔 ${data.updatedBy} listeyi güncelledi.`);
+            }
+          }
+        } else {
+          // New Room Initialized
+          appState.items = appState.items || [];
+          saveRoomToFirestore();
+          renderItemList();
+          setStatus(true, 'Canlı Eşitlendi');
+        }
+      }, (error) => {
+        console.error("Firestore listener error:", error);
+        setStatus(false, 'Yeniden Bağlanıyor...');
+      });
+    }
+
+    function addItem(name, quantity, category) {
+      if (!name || !name.trim()) return;
+
+      const now = Date.now();
+      const newItem = {
+        id: 'item_' + now + '_' + Math.random().toString(36).substr(2, 4),
+        name: name.trim(),
+        quantity: (quantity || '1 adet').trim(),
+        category: category || 'Diğer',
+        done: false,
+        addedBy: appState.userName || 'Ortak',
+        createdAt: now,
+        updatedAt: now
+      };
+
+      appState.items.unshift(newItem);
+      appState.lastUpdated = now;
+
+      renderItemList();
+      saveRoomToFirestore();
+    }
+
+    function quickAdd(name, qty, cat) {
+      addItem(name, qty, cat);
+      showToast(`'${name}' eklendi.`);
+    }
+
+    function toggleItem(id) {
+      const item = appState.items.find(i => i.id === id);
+      if (item) {
+        item.done = !item.done;
+        item.updatedAt = Date.now();
+        appState.lastUpdated = item.updatedAt;
+        renderItemList();
+        saveRoomToFirestore();
+      }
+    }
+
+    function deleteItem(id) {
+      appState.items = appState.items.filter(i => i.id !== id);
+      appState.lastUpdated = Date.now();
+      renderItemList();
+      saveRoomToFirestore();
+    }
+
+    function clearCompletedItems() {
+      appState.items = appState.items.filter(i => !i.done);
+      appState.lastUpdated = Date.now();
+      renderItemList();
+      saveRoomToFirestore();
+      showToast('Tamamlananlar temizlendi');
+    }
+
+    function renderItemList() {
+      const container = document.getElementById('itemList');
+      if (!container) return;
+
+      let list = appState.items || [];
+
+      if (appState.filter === 'active') list = list.filter(i => !i.done);
+      if (appState.filter === 'done') list = list.filter(i => i.done);
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 px-4 text-slate-400 dark:text-slate-500 space-y-2">
+            <div class="text-4xl">🛒</div>
+            <p class="font-semibold text-sm">Liste şu an boş</p>
+            <p class="text-xs">Yeni bir ürün ekleyin veya hızlı butonları kullanın.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map(item => `
+        <div class="p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${
+          item.done 
+            ? 'bg-slate-50/80 dark:bg-slate-800/30 border-slate-200/60 dark:border-slate-800 opacity-60' 
+            : 'bg-white dark:bg-slate-800 border-slate-200/90 dark:border-slate-700 shadow-sm'
+        }">
+          <div class="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" onclick="toggleItem('${item.id}')">
+            <input type="checkbox" ${item.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleItem('${item.id}')" 
+              class="w-5 h-5 rounded-lg text-emerald-600 focus:ring-emerald-500 border-slate-300 dark:border-slate-600 cursor-pointer">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-sm ${item.done ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-100'} truncate">${escapeHtml(item.name)}</span>
+                <span class="text-[11px] font-semibold px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-md shrink-0">${escapeHtml(item.quantity)}</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                <span>${escapeHtml(item.category)}</span>
+                <span>•</span>
+                <span>${escapeHtml(item.addedBy)} ekledi</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" onclick="deleteItem('${item.id}')" aria-label="Sil" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const nameInp = document.getElementById('itemName');
+      const qtyInp = document.getElementById('itemQty');
+      const catSelect = document.getElementById('itemCat');
+
+      if (nameInp && nameInp.value.trim()) {
+        addItem(nameInp.value, qtyInp.value, catSelect.value);
+        nameInp.value = '';
+        nameInp.focus();
+      }
+    }
+
+    function setFilter(filterType) {
+      appState.filter = filterType;
+      ['tabAll', 'tabActive', 'tabDone'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.className = "px-3 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 transition";
+      });
+
+      if (filterType === 'all') document.getElementById('tabAll').className = "px-3 py-1 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white transition font-bold";
+      if (filterType === 'active') document.getElementById('tabActive').className = "px-3 py-1 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white transition font-bold";
+      if (filterType === 'done') document.getElementById('tabDone').className = "px-3 py-1 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white transition font-bold";
+
+      renderItemList();
+    }
+
+    function shareRoomLink() {
+      const cleanRoom = getCleanRoomCode();
+      const shareUrl = `${window.location.origin}${window.location.pathname}?room=${cleanRoom}`;
+      
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          showToast('🔗 Davet linki kopyalandı! Eşine WhatsApp\'tan gönder.');
+        }).catch(() => {
+          fallbackCopy(shareUrl);
+        });
+      } else {
+        fallbackCopy(shareUrl);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      showToast('🔗 Link kopyalandı! Eşine gönderebilirsin.');
+    }
+
+    function showQrCode() {
+      const cleanRoom = getCleanRoomCode();
+      const shareUrl = `${window.location.origin}${window.location.pathname}?room=${cleanRoom}`;
+      const qrContainer = document.getElementById('qrImageContainer');
+      qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(shareUrl)}" alt="QR Code" class="w-40 h-40 rounded-lg">`;
+      document.getElementById('qrModal').classList.remove('hidden');
+    }
+
+    function closeQrModal() {
+      document.getElementById('qrModal').classList.add('hidden');
+    }
+
+    function openModal() {
+      document.getElementById('roomInput').value = appState.roomCode;
+      document.getElementById('userInput').value = appState.userName;
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('settingsModal').classList.add('hidden');
+    }
+
+    function saveSettings() {
+      const roomInp = document.getElementById('roomInput').value.trim().toUpperCase() || 'HUSOGULE1';
+      const userInp = document.getElementById('userInput').value.trim() || 'Siz';
+
+      appState.roomCode = roomInp;
+      appState.userName = userInp;
+
+      safeSetStorage('shopping_room_v3', roomInp);
+      safeSetStorage('shopping_user_v3', userInp);
+
+      document.getElementById('roomCodeDisplay').innerText = roomInp;
+      closeModal();
+
+      subscribeToRoom();
+      showToast('Ayarlar kaydedildi ve bağlandı.');
+    }
+
+    function forceSync() {
+      closeModal();
+      subscribeToRoom();
+      showToast('Yeniden eşitleniyor...');
+    }
+
+    /* Expose module functions to global window for HTML inline event handlers */
+    window.shareRoomLink = shareRoomLink;
+    window.showQrCode = showQrCode;
+    window.closeQrModal = closeQrModal;
+    window.quickAdd = quickAdd;
+    window.toggleItem = toggleItem;
+    window.deleteItem = deleteItem;
+    window.clearCompletedItems = clearCompletedItems;
+    window.handleFormSubmit = handleFormSubmit;
+    window.setFilter = setFilter;
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+    window.saveSettings = saveSettings;
+    window.forceSync = forceSync;
+
+    async function initApp() {
+      appState.roomCode = safeGetStorage('shopping_room_v3', 'HUSOGULE1');
+      appState.userName = safeGetStorage('shopping_user_v3', 'Siz');
+
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomParam = urlParams.get('room');
+        if (roomParam) {
+          const cleanParam = roomParam.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+          if (cleanParam) {
+            appState.roomCode = cleanParam;
+            safeSetStorage('shopping_room_v3', cleanParam);
+          }
+        }
+      } catch(e) {}
+
+      const roomDisplay = document.getElementById('roomCodeDisplay');
+      if (roomDisplay) roomDisplay.innerText = getCleanRoomCode();
+
+      const openModalBtn = document.getElementById('openModalBtn');
+      if (openModalBtn) openModalBtn.addEventListener('click', openModal);
+
+      const changeRoomCodeBtn = document.getElementById('changeRoomCodeBtn');
+      if (changeRoomCodeBtn) changeRoomCodeBtn.addEventListener('click', openModal);
+
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+          document.documentElement.classList.toggle('dark');
+        });
+      }
+
+      await initAuth();
+      await subscribeToRoom();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
